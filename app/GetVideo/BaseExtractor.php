@@ -99,7 +99,7 @@ abstract class BaseExtractor
         ];
         foreach ($error_patterns as $pattern) {
             preg_match($pattern, $this->raw, $match);
-            if ($match[1]) {
+            if (isset($match[1])) {
                 throw new ExtractionFailedException(2004, ucfirst($match[1]));
             }
         }
