@@ -1,6 +1,6 @@
 <?php
 
-namespace App\GetVideo;
+namespace App\GetVideo\Exceptions;
 
 use Exception;
 

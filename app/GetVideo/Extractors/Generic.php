@@ -2,8 +2,8 @@
 
 namespace App\GetVideo\Extractors;
 
-use App\GetVideo\BaseExtractor;
 use App\GetVideo\Utils;
+use App\GetVideo\BaseExtractor;
 
 class Generic extends BaseExtractor
 {

@@ -14,9 +14,9 @@ return new class extends Migration
     public function up()
     {
         Schema::create('videos', function (Blueprint $table) {
-            $table->id();
+            $table->uuid('id');
+            $table->primary('id');
 
-            $table->uuid('token')->unique();
             $table->text('url');
             $table->string('title');
             $table->text('thumbnail');

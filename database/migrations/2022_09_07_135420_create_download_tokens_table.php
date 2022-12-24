@@ -14,19 +14,19 @@ return new class extends Migration
     public function up()
     {
         Schema::create('download_tokens', function (Blueprint $table) {
-            $table->id();
+            $table->uuid('id');
+            $table->primary('id');
 
-            $table->foreignId('video_id')->constrained();
+            $table->foreignUuid('video_id')->constrained();
 
-            $table->uuid('token')->unique();
             $table->text('url');
             $table->string('ext');
 
-            $table->longText('headers');
+            $table->longText('headers')->nullable();
             $table->ipAddress('ip');
-            $table->timestamp('expires_at');
 
-            $table->timestamps();
+            $table->timestamp('expires_at')->nullable();
+            $table->timestamp('created_at')->useCurrent();
         });
     }
 

@@ -2,24 +2,27 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Ramsey\Uuid\Uuid;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 
 class Video extends Model
 {
+    use HasUuids;
+
     protected $fillable = [
-        'token',
         'url',
         'title',
         'thumbnail'
     ];
 
-    public static function createToken()
+    /**
+     * Generate a new UUID for the model.
+     *
+     * @return string
+     */
+    public function newUniqueId()
     {
-        do {
-            $token = Uuid::uuid4()->toString();
-        } while (Video::where('token', $token)->exists());
-
-        return $token;
+        return (string) Uuid::uuid4();
     }
 }

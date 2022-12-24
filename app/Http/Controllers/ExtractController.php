@@ -2,18 +2,19 @@
 
 namespace App\Http\Controllers;
 
-use App\GetVideo\ExtractionFailedException;
-use App\Http\Controllers\Controller;
-use App\GetVideo\ExtractorFactory;
-use App\Models\ApiRequest;
-use App\Models\DownloadToken;
-use App\Models\Video;
-use DateInterval;
 use DateTime;
-use Exception;
+use Throwable;
+use DateInterval;
+use App\Models\Video;
+use DateTimeInterface;
+use App\Models\ApiRequest;
 use Illuminate\Http\Request;
+use App\Models\DownloadToken;
+use App\GetVideo\ExtractorFactory;
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Redis;
-use TypeError;
+use App\GetVideo\Exceptions\ExtractionFailedException;
+use App\GetVideo\Exceptions\URLNotSupportedException;
 
 class ExtractController extends Controller
 {
@@ -23,7 +24,7 @@ class ExtractController extends Controller
         $start = microtime(true);
 
         $ip = get_ip();
-        $total_quota = 1000;
+        $totalQuota = 1000;
         $todaysDate = (new DateTime())->format('Y-m-d');
 
         $validated = $request->validate([
@@ -32,8 +33,17 @@ class ExtractController extends Controller
 
         $url = $validated['url'];
 
-        // Extractor
-        $extractor = ExtractorFactory::createFromUrl($url);
+        try {
+            // Extractor
+            $extractor = ExtractorFactory::createFromUrl($url);
+        } catch (URLNotSupportedException | Throwable $e) {
+            // URL not supported error
+            return response()->json([
+                'status' => 'error',
+                'code' => 2002,
+                'message' => 'See: ' . url('api/error-codes')
+            ], 500);
+        }
 
         // Check in cache
         $identifier = 'extract:' . $extractor->get_identifier();
@@ -44,7 +54,9 @@ class ExtractController extends Controller
 
             try {
                 $extracted = $extractor->real_extract();
-            } catch (ExtractionFailedException | TypeError | Exception $e) {
+            } catch (ExtractionFailedException | Throwable $e) {
+                report($e);
+
                 return response()->json([
                     'status' => 'error',
                     'code' => isset($e->getErrorCode) ? $e->getErrorCode() : 2001,
@@ -58,7 +70,6 @@ class ExtractController extends Controller
             // Create the video if not exists
             if (!Video::where('url', $cache['webpage_url'])->exists()) {
                 Video::create([
-                    'token' => Video::createToken(),
                     'url' => $cache['webpage_url'],
                     'title' => $cache['title'],
                     'thumbnail' => $cache['thumbnail_url']
@@ -71,39 +82,44 @@ class ExtractController extends Controller
 
         // Get from cache if exists otherwise cache the result
         $result = [];
-        $identifier = 'video:' . $video->token;
+        $identifier = 'video:' . $video->id;
         if (Redis::exists($identifier)) {
             $cache = Redis::get($identifier);
             $result = json_decode($cache, true);
         } else {
             $result = [
-                'token' => $video->token,
+                'token' => $video->id,
                 'title' => $video->title,
-                'thumbnail' => url('thumbnail', [$video->token]),
+                'thumbnail' => url('thumbnail', [$video->id]),
                 'thumbnail_no_proxy' => $video->thumbnail,
                 'sources' => []
             ];
+
+            $eightHoursLater = (new DateTime())->add(new DateInterval('PT8H'));
+            $eightHoursLaterYmdHis = $eightHoursLater->format('Y-m-d H:i:s');
+            $eightHoursLaterRFC3339_EXTENDED = $eightHoursLater->format(DateTimeInterface::RFC3339_EXTENDED);
 
             // Insert the download tokens
             foreach ($cache['formats'] as $format) {
                 $downloadToken = DownloadToken::create([
                     'video_id' => $video->id,
-                    'token' => DownloadToken::createToken(),
                     'url' => $format['url'],
                     'ext' => $format['ext'],
-                    'headers' => json_encode($format['http_headers']),
+                    'headers' => isset($format['http_headers']) ? json_encode($format['http_headers']) : null,
                     'ip' => $ip,
-                    'expires_at' => (new DateTime())->add(new DateInterval('PT8H'))->format('Y-m-d H:i:s'),
+                    'expires_at' => $format['expires_at_ymdhis'] ?? $eightHoursLaterYmdHis,
                 ]);
 
                 unset($format['url']);
                 unset($format['http_headers']);
+                unset($format['expires_at_ymdhis']);
 
                 array_push($result['sources'], [
-                    'token' => $downloadToken->token,
-                    'url' => 'https://dl-ams1-v2.cevir.in/' . $downloadToken->token . '.' . $downloadToken->ext,
+                    'token' => $downloadToken->id,
+                    'url' => 'https://dl-ams1-v2.cevir.in/' . $downloadToken->id . '.' . $downloadToken->ext,
                     // 'url_no_proxy' => $downloadToken->url,
-                    ...$format
+                    ...$format,
+                    'expires_at' => $format['expires_at'] ?? $eightHoursLaterRFC3339_EXTENDED,
                 ]);
             }
 
@@ -116,23 +132,24 @@ class ExtractController extends Controller
         }
 
         // Calculate quota left
-        $quota_used = ApiRequest::where('ip', $ip)
+        $quotaUsed = ApiRequest::where('ip', $ip)
             ->whereDate('created_at', $todaysDate)
             ->count();
         $quota = [
-            'quota' => $total_quota,
-            'quota_used' => $quota_used,
-            'quota_left' => $total_quota - $quota_used
+            'quota' => $totalQuota,
+            'quota_used' => $quotaUsed,
+            'quota_left' => $totalQuota - $quotaUsed
         ];
 
-        $extraction_time = round((microtime(true) - $start) * 1000, 1);
-        $execution_time = round((microtime(true) - LARAVEL_START) * 1000, 1);
+        $nowMicrotime = microtime(true);
+        $extractionTime = round(($nowMicrotime - $start) * 1000, 1);
+        $executionTime = round(($nowMicrotime - LARAVEL_START) * 1000, 1);
 
         return response()->json([
             ...$result,
             ...$quota,
-            'extraction_time' => $extraction_time . 'ms',
-            'execution_time' => $execution_time . 'ms'
+            'extraction_time' => $extractionTime . 'ms',
+            'execution_time' => $executionTime . 'ms'
         ]);
     }
 }

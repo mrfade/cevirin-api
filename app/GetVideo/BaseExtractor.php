@@ -2,6 +2,8 @@
 
 namespace App\GetVideo;
 
+use App\GetVideo\Exceptions\ExtractionFailedException;
+
 abstract class BaseExtractor
 {
     const _default_output_tmpl = '%(title)s-%(id)s.%(ext)s';
@@ -47,13 +49,16 @@ abstract class BaseExtractor
     {
         $info = $this->_extract();
 
+        $currentClassArr = explode('\\', get_class($this));
+        $currentExtractorName = str_replace('IE', '', end($currentClassArr));
         $extractor = $info['extractor_key'];
-        if (get_class($this) !== $extractor && in_array($extractor, ExtractorFactory::classes)) {
+
+        if ($currentExtractorName !== $extractor && in_array($extractor, ExtractorFactory::classes)) {
             $class = ExtractorFactory::getExtractorClass($extractor);
             return $class::process_formats($info);
         }
 
-        return self::process_formats($info);
+        return $this::process_formats($info);
     }
 
     protected function _extract(): array

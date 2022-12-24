@@ -2,8 +2,11 @@
 
 namespace App\GetVideo\Extractors;
 
-use App\GetVideo\BaseExtractor;
+use DateTime;
+use DateInterval;
+use DateTimeInterface;
 use App\GetVideo\Utils;
+use App\GetVideo\BaseExtractor;
 
 class Youtube extends BaseExtractor
 {
@@ -53,6 +56,10 @@ class Youtube extends BaseExtractor
     {
         $formats = [];
 
+        $expiresAt = (new DateTime())->add(new DateInterval('PT6H'));
+        $expiresAtYmdHis = $expiresAt->format('Y-m-d H:i:s');
+        $expiresAtRFC3339_EXTENDED = $expiresAt->format(DateTimeInterface::RFC3339_EXTENDED);
+
         foreach (array_reverse($info['formats']) as $format) {
             $acodec = Utils::str_to_bool($format['acodec']);
             $vcodec = Utils::str_to_bool($format['vcodec']);
@@ -63,7 +70,9 @@ class Youtube extends BaseExtractor
                 'type' => 'video',
                 'url' => $format['url'],
                 'ext' => $format['ext'],
-                'http_headers' => $format['http_headers']
+                // 'http_headers' => $format['http_headers'],
+                'expires_at' => $expiresAtRFC3339_EXTENDED,
+                'expires_at_ymdhis' => $expiresAtYmdHis
             ];
 
             // only video

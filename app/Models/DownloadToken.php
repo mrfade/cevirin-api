@@ -2,14 +2,18 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Ramsey\Uuid\Uuid;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 
 class DownloadToken extends Model
 {
+    use HasUuids;
+
+    const UPDATED_AT = null;
+
     protected $fillable = [
         'video_id',
-        'token',
         'url',
         'ext',
         'headers',
@@ -17,12 +21,13 @@ class DownloadToken extends Model
         'expires_at',
     ];
 
-    public static function createToken()
+    /**
+     * Generate a new UUID for the model.
+     *
+     * @return string
+     */
+    public function newUniqueId()
     {
-        do {
-            $token = Uuid::uuid4()->toString();
-        } while (DownloadToken::where('token', $token)->exists());
-
-        return $token;
+        return (string) Uuid::uuid4();
     }
 }

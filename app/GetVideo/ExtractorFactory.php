@@ -2,14 +2,14 @@
 
 namespace App\GetVideo;
 
-use App\GetVideo\Extractors\Dailymotion;
-use App\GetVideo\Extractors\Facebook;
-use App\GetVideo\Extractors\Generic;
-use App\GetVideo\Extractors\Odnoklassniki;
-use App\GetVideo\Extractors\PuhuTV;
 use App\GetVideo\Extractors\Vimeo;
+use App\GetVideo\Extractors\PuhuTV;
+use App\GetVideo\Extractors\Generic;
 use App\GetVideo\Extractors\Youtube;
-use Exception;
+use App\GetVideo\Extractors\Facebook;
+use App\GetVideo\Extractors\Dailymotion;
+use App\GetVideo\Extractors\Odnoklassniki;
+use App\GetVideo\Exceptions\URLNotSupportedException;
 
 class ExtractorFactory
 {
@@ -73,6 +73,6 @@ class ExtractorFactory
             }
         }
 
-        throw new Exception('URL does not match');
+        throw new URLNotSupportedException('URL does not match');
     }
 }

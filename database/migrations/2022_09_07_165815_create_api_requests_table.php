@@ -16,7 +16,7 @@ return new class extends Migration
         Schema::create('api_requests', function (Blueprint $table) {
             $table->id();
 
-            $table->foreignId('video_id')->constrained();
+            $table->foreignUuid('video_id')->constrained();
 
             $table->ipAddress('ip');
             $table->foreignId('api_key_id')->nullable();
