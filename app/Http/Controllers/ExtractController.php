@@ -116,7 +116,7 @@ class ExtractController extends Controller
 
                 array_push($result['sources'], [
                     'token' => $downloadToken->id,
-                    'url' => 'https://dl-ams1-v2.cevir.in/' . $downloadToken->id . '.' . $downloadToken->ext,
+                    'url' => route('file.redirect', ['downloadToken' => $downloadToken]),
                     // 'url_no_proxy' => $downloadToken->url,
                     ...$format,
                     'expires_at' => $format['expires_at'] ?? $eightHoursLaterRFC3339_EXTENDED,

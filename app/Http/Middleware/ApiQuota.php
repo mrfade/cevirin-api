@@ -2,9 +2,9 @@
 
 namespace App\Http\Middleware;
 
-use App\Models\ApiRequest;
 use Closure;
 use DateTime;
+use App\Models\ApiRequest;
 use Illuminate\Http\Request;
 
 class ApiQuota
@@ -19,16 +19,16 @@ class ApiQuota
     public function handle(Request $request, Closure $next)
     {
         $ip = get_ip();
-        $total_quota = 1000;
+        $totalQuota = 1000;
 
         $todaysDate = (new DateTime())->format('Y-m-d');
-        $quota_used = ApiRequest::where('ip', $ip)
+        $quotaUsed = ApiRequest::where('ip', $ip)
             ->whereDate('created_at', $todaysDate)
             ->count();
-        $quota_left = $total_quota - $quota_used;
+        $quotaLeft = $totalQuota - $quotaUsed;
 
         // Quota exceeded
-        if ($quota_left <= 0) {
+        if ($quotaLeft <= 0) {
             response()->json([
                 'status' => 'error',
                 'code' => 2005,

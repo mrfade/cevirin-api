@@ -1,10 +1,11 @@
 <?php
 
-use App\Http\Controllers\ErrorCodesController;
-use App\Http\Controllers\ExtractController;
-use App\Http\Middleware\ApiQuota;
 use Illuminate\Http\Request;
+use App\Http\Middleware\ApiQuota;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\ExtractController;
+use App\Http\Controllers\ErrorCodesController;
+use App\Http\Controllers\FileRedirectController;
 
 /*
 |--------------------------------------------------------------------------
@@ -27,4 +28,10 @@ Route::get('/error-codes', [ErrorCodesController::class, 'index']);
 
 Route::get('/thumbnail/:uuid', function (Request $request, $token) {
     echo $token;
+});
+
+Route::get('/r/{downloadToken}', [FileRedirectController::class, 'redirect'])->name('file.redirect');
+
+Route::any('/', function () {
+    return redirect('/docs');
 });
