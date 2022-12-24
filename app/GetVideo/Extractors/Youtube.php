@@ -3,6 +3,7 @@
 namespace App\GetVideo\Extractors;
 
 use App\GetVideo\BaseExtractor;
+use App\GetVideo\Utils;
 
 class Youtube extends BaseExtractor
 {
@@ -43,20 +44,18 @@ class Youtube extends BaseExtractor
         return sha1($this->_url);
     }
 
-    public function real_extract(): array
+    protected function _extract(): array
     {
-        $info = $this->_get_ytdl($this->_url);
-
-        return $this->_process_formats($info);
+        return $this->_get_ytdl($this->_url);
     }
 
-    protected function _process_formats($info)
+    public static function process_formats($info)
     {
         $formats = [];
 
         foreach (array_reverse($info['formats']) as $format) {
-            $acodec = $this->str_to_bool($format['acodec']);
-            $vcodec = $this->str_to_bool($format['vcodec']);
+            $acodec = Utils::str_to_bool($format['acodec']);
+            $vcodec = Utils::str_to_bool($format['vcodec']);
 
             if (!$acodec && !$vcodec) continue;
 

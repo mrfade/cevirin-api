@@ -5,9 +5,9 @@ namespace App\GetVideo;
 abstract class BaseExtractor
 {
     const _default_output_tmpl = '%(title)s-%(id)s.%(ext)s';
+    const _formats = self::_formats;
 
     protected string $_valid_url;
-    protected array $_formats;
     public readonly int $id;
     protected string $url;
     public readonly string $raw;
@@ -45,8 +45,20 @@ abstract class BaseExtractor
 
     public function real_extract(): array
     {
-        $info = $this->_get_ytdl($this->url);
-        return $this->_process_formats($info);
+        $info = $this->_extract();
+
+        $extractor = $info['extractor_key'];
+        if (get_class($this) !== $extractor && in_array($extractor, ExtractorFactory::classes)) {
+            $class = ExtractorFactory::getExtractorClass($extractor);
+            return $class::process_formats($info);
+        }
+
+        return self::process_formats($info);
+    }
+
+    protected function _extract(): array
+    {
+        return $this->_get_ytdl($this->url);
     }
 
     protected function _match_id(string $u): int | string | bool
@@ -154,35 +166,6 @@ abstract class BaseExtractor
         return json_decode($s, true);
     }
 
-    protected function str_to_bool($s): bool
-    {
-        if ($s == 'none') {
-            return false;
-        } else if ($s == '0') {
-            return false;
-        } else if ($s == 'false') {
-            return false;
-        } else if ($s == 'true') {
-            return true;
-        } else if ($s == '1') {
-            return true;
-        } else if ($s !== false || $s !== null) {
-            return true;
-        }
-    }
-
-    protected function determine_ext($text, $default = 'unknown'): string
-    {
-        $e = explode('.', $text);
-        $last = end($e);
-        preg_match('/^([a-zA-Z0-9]+)$/i', $last, $find);
-        if (isset($find[1])) {
-            return $find[1];
-        }
-
-        return $default;
-    }
-
     public static function _parse_tmpl($tmpl, $fi): string
     {
         foreach ($fi as $fk => $fv) {
@@ -207,13 +190,13 @@ abstract class BaseExtractor
         return $this->_parse_json($json);
     }
 
-    protected function _process_formats($info)
+    public static function process_formats($info)
     {
         if ($info['_type']) {
             return $info;
         }
 
-        $formats = array_keys($this->_formats);
+        $formats = array_keys(self::_formats);
         $fmts = [];
 
         foreach (array_reverse($info['formats']) as $fmt) {
@@ -225,9 +208,9 @@ abstract class BaseExtractor
                 }
 
                 array_push($fmts, [
-                    'label' => $this->_formats[$fmt['format_id']] . ' - ' . strtoupper($fmt['ext']),
+                    'label' => self::_formats[$fmt['format_id']] . ' - ' . strtoupper($fmt['ext']),
                     'name' => $name,
-                    'ext' => $fmt['ext'] ?? $this->determine_ext($name),
+                    'ext' => $fmt['ext'] ?? Utils::determine_extension($name),
                     'url' => $fmt['url'],
                 ]);
             }

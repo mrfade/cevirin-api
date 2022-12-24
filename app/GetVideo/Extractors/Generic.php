@@ -3,6 +3,7 @@
 namespace App\GetVideo\Extractors;
 
 use App\GetVideo\BaseExtractor;
+use App\GetVideo\Utils;
 
 class Generic extends BaseExtractor
 {
@@ -21,7 +22,7 @@ class Generic extends BaseExtractor
         $this->_valid_url = self::_valid_url;
     }
 
-    protected function _process_formats($info)
+    public static function process_formats($info)
     {
         $formats = [];
 
@@ -45,7 +46,7 @@ class Generic extends BaseExtractor
             }
         } else {
 
-            $detect_ext = $this->determine_ext($info['title']);
+            $detect_ext = Utils::determine_extension($info['title']);
             $ext = $detect_ext === $info['ext'] ? $info['title'] : $info['title'] . '.' . $info['ext'];
 
             $label = isset($info['height']) ? $info['height'] . 'p - ' : '';

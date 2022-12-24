@@ -14,6 +14,26 @@ use Exception;
 class ExtractorFactory
 {
 
+    public const classes = [
+        'Youtube',
+        'Dailymotion',
+        'Facebook',
+        'Vimeo',
+        'Odnoklassniki',
+        'PuhuTV'
+    ];
+
+    /**
+     * Get Extractor class with namespace
+     *
+     * @param string $extractor
+     * @return string
+     */
+    public static function getExtractorClass(string $extractor): string
+    {
+        return sprintf('\App\GetVideo\Extractors\%s', ucfirst($extractor));
+    }
+
     /**
      * Create new extractor.
      *
@@ -24,11 +44,17 @@ class ExtractorFactory
      */
     public static function create(string $extractor, string $url): BaseExtractor
     {
-        $class = sprintf('\App\GetVideo\Extractors\%s', ucfirst($extractor));
+        $class = self::getExtractorClass($extractor);
 
         return new $class($url);
     }
 
+    /**
+     * Creates Extractor instance from url
+     *
+     * @param string $url
+     * @return BaseExtractor
+     */
     public static function createFromUrl(string $url): BaseExtractor
     {
         $_classes = [

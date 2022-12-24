@@ -44,10 +44,8 @@ class Odnoklassniki extends BaseExtractor
         return sha1($this->_url);
     }
 
-    public function real_extract(): array
+    protected function _extract(): array
     {
-        $info = $this->_get_ytdl($this->_url);
-
-        return $this->_process_formats($info);
+        return $this->_get_ytdl($this->_url);
     }
 }
