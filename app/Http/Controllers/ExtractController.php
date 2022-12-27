@@ -90,7 +90,7 @@ class ExtractController extends Controller
             $result = [
                 'token' => $video->id,
                 'title' => $video->title,
-                'thumbnail' => url('thumbnail', [$video->id]),
+                'thumbnail' => route('video.thumbnail', ['video' => $video]),
                 'thumbnail_no_proxy' => $video->thumbnail,
                 'sources' => []
             ];

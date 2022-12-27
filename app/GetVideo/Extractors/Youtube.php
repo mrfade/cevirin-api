@@ -75,6 +75,23 @@ class Youtube extends BaseExtractor
                 'expires_at_ymdhis' => $expiresAtYmdHis
             ];
 
+            if (isset($format['filesize'])) {
+                $fmt['filesize'] = $format['filesize'];
+            }
+
+            if (isset($format['dynamic_range'])) {
+                $fmt['dynamic_range'] = $format['dynamic_range'];
+            }
+
+            if (isset($format['language']) && !empty($format['language'])) {
+                $fmt['language'] = $format['language'];
+
+                if (isset($format['language_preference'])) {
+                    $fmt['language_preference'] = $format['language_preference'];
+                }
+            }
+
+
             // only video
             if (!$acodec) {
                 $fmt['resolution'] = intval(preg_replace('/p([0-9]{2})?/i', '', $format['format_note']));

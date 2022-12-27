@@ -23,14 +23,10 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 Route::get('/extract', [ExtractController::class, 'extract'])->middleware(ApiQuota::class);
+Route::get('/video/{video}/thumbnail', [VideoController::class, 'thumbnail'])->name('video.thumbnail');
+Route::get('/r/{downloadToken}', [FileRedirectController::class, 'redirect'])->name('file.redirect');
 
 Route::get('/error-codes', [ErrorCodesController::class, 'index']);
-
-Route::get('/thumbnail/:uuid', function (Request $request, $token) {
-    echo $token;
-});
-
-Route::get('/r/{downloadToken}', [FileRedirectController::class, 'redirect'])->name('file.redirect');
 
 Route::any('/', function () {
     return redirect('/docs');
