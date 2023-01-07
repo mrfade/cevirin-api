@@ -57,7 +57,6 @@ class Youtube extends BaseExtractor
         $formats = [];
 
         $expiresAt = (new DateTime())->add(new DateInterval('PT6H'));
-        $expiresAtYmdHis = $expiresAt->format('Y-m-d H:i:s');
         $expiresAtRFC3339_EXTENDED = $expiresAt->format(DateTimeInterface::RFC3339_EXTENDED);
 
         foreach (array_reverse($info['formats']) as $format) {
@@ -72,7 +71,6 @@ class Youtube extends BaseExtractor
                 'ext' => $format['ext'],
                 // 'http_headers' => $format['http_headers'],
                 'expires_at' => $expiresAtRFC3339_EXTENDED,
-                'expires_at_ymdhis' => $expiresAtYmdHis
             ];
 
             if (isset($format['filesize'])) {
@@ -90,7 +88,6 @@ class Youtube extends BaseExtractor
                     $fmt['language_preference'] = $format['language_preference'];
                 }
             }
-
 
             // only video
             if (!$acodec) {

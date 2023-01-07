@@ -96,23 +96,20 @@ class ExtractController extends Controller
             ];
 
             $eightHoursLater = (new DateTime())->add(new DateInterval('PT8H'));
-            $eightHoursLaterYmdHis = $eightHoursLater->format('Y-m-d H:i:s');
             $eightHoursLaterRFC3339_EXTENDED = $eightHoursLater->format(DateTimeInterface::RFC3339_EXTENDED);
 
             // Insert the download tokens
             foreach ($cache['formats'] as $format) {
                 $downloadToken = DownloadToken::create([
-                    'video_id' => $video->id,
                     'url' => $format['url'],
                     'ext' => $format['ext'],
                     'headers' => isset($format['http_headers']) ? json_encode($format['http_headers']) : null,
                     'ip' => $ip,
-                    'expires_at' => $format['expires_at_ymdhis'] ?? $eightHoursLaterYmdHis,
+                    'expires_at' => $format['expires_at'] ?? $eightHoursLaterRFC3339_EXTENDED,
                 ]);
 
                 unset($format['url']);
                 unset($format['http_headers']);
-                unset($format['expires_at_ymdhis']);
 
                 array_push($result['sources'], [
                     'token' => $downloadToken->id,

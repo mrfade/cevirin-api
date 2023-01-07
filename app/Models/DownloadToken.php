@@ -3,7 +3,7 @@
 namespace App\Models;
 
 use Ramsey\Uuid\Uuid;
-use Illuminate\Database\Eloquent\Model;
+use Jenssegers\Mongodb\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 
 class DownloadToken extends Model
@@ -12,8 +12,10 @@ class DownloadToken extends Model
 
     const UPDATED_AT = null;
 
+    protected $connection = 'mongodb';
+    protected $dates = ['expires_at'];
+
     protected $fillable = [
-        'video_id',
         'url',
         'ext',
         'headers',
