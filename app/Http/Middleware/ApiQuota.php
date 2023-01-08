@@ -29,10 +29,10 @@ class ApiQuota
 
         // Quota exceeded
         if ($quotaLeft <= 0) {
-            response()->json([
+            return response()->json([
                 'status' => 'error',
-                'code' => 2005,
-                'message' => 'Rate limit exceeded'
+                'code' => 'RATE_LIMIT_EXCEEDED',
+                'message' => 'Rate limit exceeded. See: ' . url('docs/error-codes')
             ], 429);
         }
 

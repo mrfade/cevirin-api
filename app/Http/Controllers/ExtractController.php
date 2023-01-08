@@ -40,9 +40,9 @@ class ExtractController extends Controller
             // URL not supported error
             return response()->json([
                 'status' => 'error',
-                'code' => 2002,
-                'message' => 'See: ' . url('api/error-codes')
-            ], 500);
+                'code' => 'URL_NOT_SUPPORTED',
+                'message' => 'Url not supported. See: ' . url('docs/error-codes')
+            ], 501);
         }
 
         // Check in cache
@@ -59,8 +59,8 @@ class ExtractController extends Controller
 
                 return response()->json([
                     'status' => 'error',
-                    'code' => isset($e->getErrorCode) ? $e->getErrorCode() : 2001,
-                    'message' => isset($e->getErrorMessage) ? $e->getErrorMessage() : 'See: ' . url('api/error-codes')
+                    'code' => isset($e->getErrorCode) ? $e->getErrorCode() : 'UNKNOWN_ERROR',
+                    'message' => isset($e->getErrorMessage) ? $e->getErrorMessage() : 'See: ' . url('docs/error-codes')
                 ], 500);
             }
 

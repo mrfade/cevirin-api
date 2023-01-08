@@ -6,11 +6,11 @@ use Exception;
 
 class ExtractionFailedException extends Exception
 {
-    public function __construct(private int $errorCode = -1, private string $errorMessage = '')
+    public function __construct(private string $errorCode, private string $errorMessage = '')
     {
     }
 
-    public function getErrorCode(): int
+    public function getErrorCode(): string
     {
         return $this->errorCode;
     }

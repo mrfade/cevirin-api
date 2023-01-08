@@ -17,18 +17,19 @@ class ErrorCodesController extends Controller
             3003 => 'izinsiz ip',
             3004 => 'dosya süresi dolmuş',
 
-            2001 => 'unknown error',
-            2002 => 'url not supported',
-            2003 => 'file not found',
-            2004 => 'extraction failed',
-            2005 => 'rate limit exceeded',
-            2101 => 'no support for adult content',
+            'UNKNOWN_ERROR' => 'Unknown error.',
+            'URL_NOT_SUPPORTED' => 'Url not supported.',
+            'FILE_NOT_FOUND' => 'File not found.',
+            'EXTRACTION_FAILED' => 'Extraction process failed.',
+            'RATE_LIMIT_EXCEEDED' => 'Extraction rate limit exceeded. Default: 1000 extraction/day',
+            'TOO_MANY_ATTEMPTS' => 'Too many requests. Default: 100 reqs/min',
 
-            1001 => 'invalid request'
+            'NO_ADULT_CONTENT' => 'No support for adult content.',
+
+            'INVALID_REQUEST' => 'Invalid request'
         ];
 
-        return response()->json([
-            'status' => 'success',
+        return view('error-codes', [
             'codes' => $codes
         ]);
     }

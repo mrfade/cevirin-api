@@ -93,6 +93,7 @@ abstract class BaseExtractor
         $query = '/usr/local/bin/python3.8 /usr/local/bin/yt-dlp ' . $this->_get_args() . ' ' . $this->_get_args_w() . ' ' . escapeshellarg($this->url) . ' 2>&1';
 
         $this->raw = shell_exec($query);
+        // $this->raw = file_get_contents('http://51.158.244.147:8090/extract?url=' . $this->url);
         $this->parsed = $this->_parse_json($this->raw);
 
         $this->_check_errors();
@@ -117,16 +118,16 @@ abstract class BaseExtractor
         foreach ($error_patterns as $pattern) {
             preg_match($pattern, $this->raw, $match);
             if (isset($match[1])) {
-                throw new ExtractionFailedException(2004, ucfirst($match[1]));
+                throw new ExtractionFailedException('EXTRACTION_FAILED', ucfirst($match[1]));
             }
         }
 
         if (preg_match('/(Name or service not known|Unsupported URL|Unable to download webpage)/i', $this->raw)) {
-            throw new ExtractionFailedException(2002);
+            throw new ExtractionFailedException('URL_NOT_SUPPORTED');
         } else if (preg_match('/([Ff][Ii][Ll][Ee]\s*[Nn][Oo][Tt]\s*[Ff][Oo][Uu][Nn][Dd]|Incomplete YouTube ID)/i', $this->raw)) {
-            throw new ExtractionFailedException(2003);
+            throw new ExtractionFailedException('FILE_NOT_FOUND');
         } else if (preg_match('/ERROR:/', $this->raw)) {
-            throw new ExtractionFailedException(2001);
+            throw new ExtractionFailedException('UNKNOWN_ERROR');
         }
 
         if ($this->parsed) {
@@ -137,7 +138,7 @@ abstract class BaseExtractor
                 (isset($ytdl['age_limit']) && $ytdl['age_limit'] >= 18) ||
                 preg_match('/(\+18|18\+|porn|xxx|sex|tits)/i', $ytdl['title'] . $ytdl['uploader'])
             ) {
-                throw new ExtractionFailedException(2101);
+                throw new ExtractionFailedException('NO_ADULT_CONTENT');
             }
         }
     }

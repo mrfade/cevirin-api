@@ -4,7 +4,6 @@ use Illuminate\Http\Request;
 use App\Http\Middleware\ApiQuota;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ExtractController;
-use App\Http\Controllers\ErrorCodesController;
 use App\Http\Controllers\FileRedirectController;
 
 /*
@@ -25,8 +24,6 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 Route::get('/extract', [ExtractController::class, 'extract'])->middleware(ApiQuota::class);
 Route::get('/video/{video}/thumbnail', [VideoController::class, 'thumbnail'])->name('video.thumbnail');
 Route::get('/r/{downloadToken}', [FileRedirectController::class, 'redirect'])->name('file.redirect');
-
-Route::get('/error-codes', [ErrorCodesController::class, 'index']);
 
 Route::any('/', function () {
     return redirect('/docs');
